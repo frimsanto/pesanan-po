@@ -23,10 +23,12 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
     const token = signToken(user);
 
+    const isProd = process.env.NODE_ENV === 'production';
+
     res.cookie('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production' ? true : false,
-      sameSite: 'lax',
+      secure: isProd, // wajib true kalau SameSite 'none'
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 1000 * 60 * 60 * 8, // 8 jam
     });
 
