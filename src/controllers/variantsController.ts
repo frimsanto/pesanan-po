@@ -44,11 +44,11 @@ export async function createVariantHandler(req: Request, res: Response, next: Ne
   }
 }
 
-const updateVariantSchema = variantSchema.partial().omit({ id: true, product_id: true });
+const updateVariantSchema = variantSchema.partial().omit({ product_id: true });
 
 export async function updateVariantHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const parsed = updateVariantSchema.parse(req.body);
+    const parsed = updateVariantSchema.parse(req.body) as any;
     const updated = await updateVariant(req.params.id, {
       name: parsed.name,
       extra_price: parsed.extra_price,

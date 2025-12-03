@@ -40,11 +40,11 @@ export async function createProduct(
     ]
   );
 
-  const [rows] = await pool.query<Product[]>(
+  const [rows] = await pool.query(
     "SELECT * FROM products ORDER BY created_at DESC LIMIT 1"
   );
 
-  const created = rows[0];
+  const created = (rows as Product[])[0];
   if (!created) {
     throw new Error("Failed to create product");
   }

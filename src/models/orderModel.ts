@@ -60,11 +60,11 @@ export async function createOrder(
     ]
   );
 
-  const [rows] = await pool.query<Order[]>(
+  const [rows] = await pool.query(
     "SELECT * FROM orders WHERE id = (SELECT id FROM orders ORDER BY created_at DESC LIMIT 1)"
   );
 
-  return rows[0];
+  return (rows as Order[])[0];
 }
 
 export async function createOrderItems(
@@ -87,11 +87,11 @@ export async function createOrderItems(
 }
 
 export async function getOrderByIdWithItems(id: string): Promise<OrderWithItems | null> {
-  const [orderRows] = await pool.query<Order[]>("SELECT * FROM orders WHERE id = ?", [id]);
-  const order = orderRows[0];
+  const [orderRows] = await pool.query("SELECT * FROM orders WHERE id = ?", [id]);
+  const order = (orderRows as Order[])[0];
   if (!order) return null;
 
-  const [itemRows] = await pool.query<OrderItemWithRelations[]>(
+  const [itemRows] = await pool.query(
     `SELECT
       oi.id,
       oi.order_id,
@@ -111,7 +111,7 @@ export async function getOrderByIdWithItems(id: string): Promise<OrderWithItems 
 
   return {
     ...order,
-    items: itemRows,
+    items: itemRows as OrderItemWithRelations[],
   };
 }
 
@@ -119,13 +119,11 @@ export async function getOrderByCodePublic(code: string): Promise<
   Pick<Order, "code" | "customer_name" | "status" | "created_at">
   | null
 > {
-  const [rows] = await pool.query<
-    Pick<Order, "code" | "customer_name" | "status" | "created_at">[]
-  >(
+  const [rows] = await pool.query(
     "SELECT code, customer_name, status, created_at FROM orders WHERE code = ?",
     [code]
   );
-  return rows[0] ?? null;
+  return (rows as Pick<Order, "code" | "customer_name" | "status" | "created_at">[])[0] ?? null;
 }
 
 export async function getOrdersWithTotals(filters: OrderFilters) {
@@ -197,7 +195,7 @@ export async function updateOrder(
   }
 
   if (!fields.length) {
-    const [rows] = await pool.query<Order[]>("SELECT * FROM orders WHERE id = ?", [id]);
+    const [rows] = await pool.query("SELECT * FROM orders WHERE id = ?", [id]);
     return (rows as Order[])[0] ?? null;
   }
 
@@ -205,7 +203,7 @@ export async function updateOrder(
 
   await pool.query(`UPDATE orders SET ${fields.join(", ")} WHERE id = ?`, params);
 
-  const [rows] = await pool.query<Order[]>("SELECT * FROM orders WHERE id = ?", [id]);
+  const [rows] = await pool.query("SELECT * FROM orders WHERE id = ?", [id]);
   return (rows as Order[])[0] ?? null;
 }
 

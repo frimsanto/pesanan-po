@@ -41,12 +41,12 @@ export async function createVariant(
     ]
   );
 
-  const [rows] = await pool.query<ProductVariant[]>(
+  const [rows] = await pool.query(
     "SELECT * FROM product_variants WHERE product_id = ? ORDER BY created_at DESC LIMIT 1",
     [data.product_id]
   );
 
-  const created = rows[0];
+  const created = (rows as ProductVariant[])[0];
   if (!created) {
     throw new Error("Failed to create variant");
   }

@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { type Secret, type SignOptions } from 'jsonwebtoken';
 import { findActiveUserRoleByEmail, UserRoleRow } from '../models/userRoleModel';
 
 export type AuthRole = 'admin' | 'super_admin';
@@ -11,7 +11,7 @@ export interface AuthUser {
   role: AuthRole;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+const JWT_SECRET: Secret = (process.env.JWT_SECRET || 'dev-secret-change-me') as Secret;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
 
 export interface AuthRequest extends Request {
@@ -33,7 +33,7 @@ export function signToken(user: UserRoleRow) {
     name: user.name,
   };
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as SignOptions);
 }
 
 export function authenticate(req: AuthRequest, res: Response, next: NextFunction) {

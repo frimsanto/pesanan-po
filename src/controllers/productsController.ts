@@ -41,8 +41,6 @@ export async function createProductHandler(req: Request, res: Response, next: Ne
       price: parsed.price,
       image_url: parsed.image_url || null,
       is_active: typeof parsed.is_active === "number" ? parsed.is_active : 1,
-      created_at: new Date(),
-      updated_at: new Date(),
     });
     res.status(201).json(created);
   } catch (err: any) {
@@ -53,11 +51,11 @@ export async function createProductHandler(req: Request, res: Response, next: Ne
   }
 }
 
-const updateProductSchema = productSchema.partial().omit({ id: true });
+const updateProductSchema = productSchema.partial();
 
 export async function updateProductHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const parsed = updateProductSchema.parse(req.body);
+    const parsed = updateProductSchema.parse(req.body) as any;
     const updated = await updateProduct(req.params.id, {
       name: parsed.name,
       description: parsed.description,
