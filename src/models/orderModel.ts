@@ -50,10 +50,24 @@ export async function createOrder(
 ): Promise<Order> {
   const id = randomUUID();
 
+  // Generate order code: PO-<YEAR>-<SEQUENCE>
+  const year = new Date().getFullYear().toString();
+  const pattern = `PO-${year}-%`;
+
+  const [seqRows] = await pool.query<[{ maxSeq: number | null }]>(
+    "SELECT MAX(CAST(SUBSTRING(code, 9) AS UNSIGNED)) AS maxSeq FROM orders WHERE code LIKE ?",
+    [pattern]
+  );
+
+  const currentMax = (seqRows as any)[0]?.maxSeq ?? 0;
+  const nextSeq = Number(currentMax) + 1;
+  const code = `PO-${year}-${String(nextSeq).padStart(4, "0")}`;
+
   await pool.query(
-    "INSERT INTO orders (id, customer_name, customer_whatsapp, customer_email, notes, status) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO orders (id, code, customer_name, customer_whatsapp, customer_email, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
     [
       id,
+      code,
       data.customer_name,
       data.customer_whatsapp,
       data.customer_email ?? null,
