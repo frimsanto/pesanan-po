@@ -1,4 +1,5 @@
 import { pool } from "../config/db";
+import { randomUUID } from "crypto";
 
 export type OrderStatus = "pending" | "waiting_payment" | "confirmed" | "cancelled";
 
@@ -47,11 +48,12 @@ export async function createOrder(
     status?: OrderStatus;
   }
 ): Promise<Order> {
-  const [result] = await pool.query<{
-    insertId: number;
-  } & any>(
-    "INSERT INTO orders (customer_name, customer_whatsapp, customer_email, notes, status) VALUES (?, ?, ?, ?, ?)",
+  const id = randomUUID();
+
+  await pool.query(
+    "INSERT INTO orders (id, customer_name, customer_whatsapp, customer_email, notes, status) VALUES (?, ?, ?, ?, ?, ?)",
     [
+      id,
       data.customer_name,
       data.customer_whatsapp,
       data.customer_email ?? null,
@@ -60,9 +62,7 @@ export async function createOrder(
     ]
   );
 
-  const [rows] = await pool.query(
-    "SELECT * FROM orders WHERE id = (SELECT id FROM orders ORDER BY created_at DESC LIMIT 1)"
-  );
+  const [rows] = await pool.query("SELECT * FROM orders WHERE id = ?", [id]);
 
   return (rows as Order[])[0];
 }
@@ -73,6 +73,7 @@ export async function createOrderItems(
   if (!items.length) return;
 
   const values = items.map((i) => [
+    randomUUID(),
     i.order_id,
     i.product_id,
     i.variant_id ?? null,
@@ -81,7 +82,7 @@ export async function createOrderItems(
   ]);
 
   await pool.query(
-    "INSERT INTO order_items (order_id, product_id, variant_id, quantity, unit_price) VALUES ?",
+    "INSERT INTO order_items (id, order_id, product_id, variant_id, quantity, unit_price) VALUES ?",
     [values]
   );
 }
