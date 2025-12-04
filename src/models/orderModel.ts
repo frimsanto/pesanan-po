@@ -54,7 +54,7 @@ export async function createOrder(
   const year = new Date().getFullYear().toString();
   const pattern = `PO-${year}-%`;
 
-  const [seqRows] = await pool.query<[{ maxSeq: number | null }]>(
+  const [seqRows] = await pool.query(
     "SELECT MAX(CAST(SUBSTRING(code, 9) AS UNSIGNED)) AS maxSeq FROM orders WHERE code LIKE ?",
     [pattern]
   );
